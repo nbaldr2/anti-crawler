@@ -1,0 +1,130 @@
+{
+  "iteration": 1,
+  "description": "Core detection engine, basic dashboard, risk scoring, and blocking rules (no CAPTCHA).",
+  "userStories": [
+    {
+      "id": "US1",
+      "title": "As a security operator, I want to define detection rules so that the system can evaluate incoming requests.",
+      "acceptanceCriteria": [
+        "A JSON/YAML rule file exists in the configured location.",
+        "Each rule includes a unique ID, condition type (IP reputation, User‑Agent, header, rate‑limit), threshold, and action (allow, rate‑limit, block).",
+        "The rule file can be reloaded without restarting the detection engine."
+      ],
+      "estimatedHours": 6
+    },
+    {
+      "id": "US2",
+      "title": "As a security operator, I want the detection engine to evaluate every request against the rules and produce a risk score.",
+      "acceptanceCriteria": [
+        "The engine receives request metadata (IP, User‑Agent, headers, timestamps) from the proxy.",
+        "For each request, the engine computes a numeric risk score (0‑100) based on rule matches.",
+        "The engine returns a verdict: allow, rate‑limit, or block, based on configurable score thresholds.",
+        "The verdict and score are logged with request metadata."
+      ],
+      "estimatedHours": 16
+    },
+    {
+      "id": "US3",
+      "title": "As a security operator, I want a lightweight reverse‑proxy that forwards traffic to the detection engine and enforces the engine's verdict.",
+      "acceptanceCriteria": [
+        "All incoming HTTP(S) requests pass through the proxy before reaching the web application.",
+        "The proxy forwards request metadata to the detection engine via HTTP/REST or gRPC.",
+        "Based on the verdict, the proxy either forwards the request, applies rate limiting, or returns HTTP 403/429.",
+        "All decisions are logged for audit purposes."
+      ],
+      "estimatedHours": 12
+    },
+    {
+      "id": "US4",
+      "title": "As a security operator, I want a minimal dashboard that shows real‑time traffic overview and blocked request statistics.",
+      "acceptanceCriteria": [
+        "Dashboard displays total requests per second, % of allowed vs. blocked traffic, and top 5 offending IPs.",
+        "Data updates at least once per second via WebSocket or polling.",
+        "Dashboard is accessible via HTTPS with token‑based authentication.",
+        "Dashboard UI is built with React and uses a simple charting library."
+      ],
+      "estimatedHours": 12
+    },
+    {
+      "id": "US5",
+      "title": "As a security operator, I need an API to retrieve and manage detection rules, allow‑list, and deny‑list entries.",
+      "acceptanceCriteria": [
+        "GET /rules returns the current rule set.",
+        "POST /rules adds a new rule; PUT /rules/:id updates an existing rule; DELETE /rules/:id removes a rule.",
+        "GET /allowlist, POST /allowlist, DELETE /allowlist/:ip perform similar CRUD for trusted IPs.",
+        "GET /denylist, POST /denylist, DELETE /denylist/:ip perform similar CRUD for blocked IPs.",
+        "All API endpoints require a bearer token."
+      ],
+      "estimatedHours": 6
+    },
+    {
+      "id": "US6",
+      "title": "As a QA engineer, I want automated tests that verify core detection, proxy behavior, and dashboard data.",
+      "acceptanceCriteria": [
+        "Unit tests for each rule type (IP reputation, UA, header, rate‑limit).",
+        "Integration test that sends synthetic requests through the proxy and asserts correct verdicts.",
+        "End‑to‑end test that verifies the dashboard reflects the expected metrics after simulated traffic.",
+        "All tests run in CI and must pass before merge."
+      ],
+      "estimatedHours": 8
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "description": "Create core detection rule schema and sample rule file.",
+      "owner": "product-manager",
+      "estimatedHours": 6
+    },
+    {
+      "id": "T2",
+      "description": "Design detection engine architecture and define API contract with proxy.",
+      "owner": "backend-dev",
+      "estimatedHours": 8
+    },
+    {
+      "id": "T3",
+      "description": "Implement traffic interception proxy (NGINX‑Lua or Envoy) that forwards metadata to detection engine.",
+      "owner": "backend-dev",
+      "estimatedHours": 12
+    },
+    {
+      "id": "T4",
+      "description": "Develop core detection engine: load rules, compute risk score, return verdict.",
+      "owner": "backend-dev",
+      "estimatedHours": 16
+    },
+    {
+      "id": "T5",
+      "description": "Create PostgreSQL schema for logs, rules, allow/deny lists, and write persistence layer.",
+      "owner": "backend-dev",
+      "estimatedHours": 8
+    },
+    {
+      "id": "T6",
+      "description": "Build minimal dashboard UI (React) showing real‑time RPS, allowed %/blocked %, top offending IPs.",
+      "owner": "frontend-dev",
+      "estimatedHours": 12
+    },
+    {
+      "id": "T7",
+      "description": "Implement backend API endpoints for metrics, rule CRUD, and allow/deny list management.",
+      "owner": "backend-dev",
+      "estimatedHours": 6
+    },
+    {
+      "id": "T8",
+      "description": "Write automated test suite (unit + integration + e2e) covering core detection, proxy behavior, and dashboard updates.",
+      "owner": "qa-agent",
+      "estimatedHours": 8
+    },
+    {
+      "id": "T9",
+      "description": "Run iteration‑1 QA, capture results, and fix any defects.",
+      "owner": "qa-agent",
+      "estimatedHours": 8
+    }
+  ],
+  "totalEstimatedHours": 90,
+  "notes": "All work assumes existing CI/CD pipeline and containerised deployment environment. No CAPTCHA implementation is included in this iteration."
+}
